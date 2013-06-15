@@ -85,6 +85,4 @@ partie concernant cette reconnaissance. Toutefois, par curiosité et aussi pour 
 
 Pour réaliser cette application nous avons suivi la démarche présentée dans le journal de bord du wiki que vous trouverez à ce lien : http://fablab.ensimag.fr/index.php/Frigo_Time_Machine#Journal_de_bord
 
-
-
-
+Cette application est donc capable de reconnaître une banane dans une image. Pour l'utiliser, il est impératif que le téléphone soit connecté à l'ordinateur car les informations relatives à la détection de la banane ne sont données que sous forme de "Log" informatifs et apparaissent donc uniquement dans le LogCat. Le classifieur que nous avons utilisé est assez simple et la détection de la banane n'est donc pas parfaite. Il faut que cette dernière soit suffisamment proche de l'objectif de l'appareil pour que cela marche. Si une banane est détectée, vous devriez avoir un log informatif du type "Nombre de bananes détectées : 1" ainsi que la taille de la banane détectée. Pour récupérer plus facilement ces Log, vous pouvez définir un filtre pour le LogCat ayant pour tag : "BananaDetector"
