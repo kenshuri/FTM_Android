@@ -63,7 +63,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                     Log.i(TAG, "OpenCV loaded successfully");
                     
                     try {
-                        // load cascade file from application resources
+                        // On charge le fichier XML contenant les données du classifieur
                         InputStream is = getResources().openRawResource(R.raw.banana);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
                         mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
@@ -172,7 +172,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
     	//On va essayer de détecter la présence d'une banane pour chaque nouvelle image
     	//captée par le téléphone
-    	Mat Grey = inputFrame.gray();
+    	Mat Grey = inputFrame.gray(); //Image prise par la caméra
     	MatOfRect bananas = new MatOfRect();
     	Size minSize = new Size(30,20);
     	Size maxSize = new Size(120,80);
