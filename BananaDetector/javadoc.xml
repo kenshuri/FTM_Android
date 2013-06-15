@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="private" author="true" classpath="C:\NVPACK\OpenCV-2.4.5-Tegra-sdk\sdk\java\bin\opencv library - 2.4.5.jar;libs/android-support-v4.jar;C:\NVPACK\android-sdk-windows\platforms\android-17\android.jar" destdir="doc" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="org.opencv,com.example.bananadetector" source="1.6" sourcepath="gen;src" splitindex="true" use="true" version="true"/>
+    </target>
+</project>

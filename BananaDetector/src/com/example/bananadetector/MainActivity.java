@@ -11,28 +11,47 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Size;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.Size;
 import org.opencv.objdetect.CascadeClassifier;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.WindowManager;
-import android.widget.Toast;
+
+/**
+ * Activité principale de l'application
+ * <p> Cette activité est appelée au lancement de l'application. Son layout est
+ * <i>activity_main.xml</i> qui se trouve dans le dossier /res/layout.
+ * 
+ * @author Alexis Sciau
+ *
+ */
 
 public class MainActivity extends Activity implements CvCameraViewListener2 {
+	/**
+	 * TAG utilisé pour l'affichage d'informations lors du debug
+	 */
     private static final String TAG = "Banana Detector";
 
+    /**
+     * Vue de la caméra
+     */
     private CameraBridgeViewBase mOpenCvCameraView;
-    private boolean              mIsJavaCamera = true;
-    private MenuItem             mItemSwitchCamera = null;
+    
+    /**
+     * Fichier contenant les informations du classifieur
+     */
     private File                 mCascadeFile;
+    
+    /**
+     * Le classifieur chargé
+     */
     private CascadeClassifier    mCascadeClassifier;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -65,8 +84,6 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                         } else
                             Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
 
-                        //mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
-
                         cascadeDir.delete();
 
                     } catch (IOException e) {
@@ -84,29 +101,30 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         }
     };
 
+    /**
+     * Constructeur par défaut de l'activité
+     */
     public MainActivity() {
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
-    /** Called when the activity is first created. */
+    /**
+     * Appelée lorque l'activité est créée
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        setContentView(R.layout.activity_main);
-
-        if (mIsJavaCamera)
-            mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.tutorial1_activity_java_surface_view);
-        else
-            mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.tutorial1_activity_native_surface_view);
-
+        setContentView(R.layout.activity_main);       
+        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.tutorial1_activity_java_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-
         mOpenCvCameraView.setCvCameraViewListener(this);
     }
 
+    /**
+     * Appelée lorsque l'activité est mise en pause (elle n'est plus au premier plan)
+     */
     @Override
     public void onPause()
     {
@@ -115,6 +133,9 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             mOpenCvCameraView.disableView();
     }
 
+    /**
+     * Appelée lorsque l'activité revient au premier plan
+     */
     @Override
     public void onResume()
     {
@@ -122,56 +143,37 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
     }
 
+    /**
+     * Appelée lorsque l'activité est détruite
+     */
     public void onDestroy() {
         super.onDestroy();
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        Log.i(TAG, "called onCreateOptionsMenu");
-        mItemSwitchCamera = menu.add("Toggle Native/Java camera");
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        String toastMesage = new String();
-        Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
-
-        if (item == mItemSwitchCamera) {
-            mOpenCvCameraView.setVisibility(SurfaceView.GONE);
-            mIsJavaCamera = !mIsJavaCamera;
-
-            if (mIsJavaCamera) {
-                mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.tutorial1_activity_java_surface_view);
-                toastMesage = "Java Camera";
-            } else {
-                mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.tutorial1_activity_native_surface_view);
-                toastMesage = "Native Camera";
-            }
-
-            mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-            mOpenCvCameraView.setCvCameraViewListener(this);
-            mOpenCvCameraView.enableView();
-            Toast toast = Toast.makeText(this, toastMesage, Toast.LENGTH_LONG);
-            toast.show();
-        }
-
-        return true;
-    }
-
+    /**
+     * Méthode qui doit être présente, mais elle n'est pas utile
+     */
     public void onCameraViewStarted(int width, int height) {
     }
-
+    
+    /**
+     * Méthode qui doit être présente, mais elle n'est pas utile
+     */
     public void onCameraViewStopped() {
     }
 
+    /**
+     * Appelée à chaque nouvelle prise de vue par la caméra.
+     * 
+     * Détecte à chaque nouvelle prise de vue s'il y a une banane ou pas
+     */
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+    	//On va essayer de détecter la présence d'une banane pour chaque nouvelle image
+    	//captée par le téléphone
     	Mat Grey = inputFrame.gray();
     	MatOfRect bananas = new MatOfRect();
-    	//Log.i(TAG, "Nombre de bananes avant détection : " + bananas.rows());
     	Size minSize = new Size(30,20);
     	Size maxSize = new Size(120,80);
     	mCascadeClassifier.detectMultiScale(Grey, bananas, 1.1, 10, 0,minSize,maxSize);

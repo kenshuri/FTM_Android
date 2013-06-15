@@ -89,8 +89,6 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
      * Vrai si la porte du frigo est fermée, faux sinon
      */
     private boolean fermee = false;
-    
-    private String fileName;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -253,8 +251,6 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     					Core.absdiff(current, noir, diffNoir);
     					Double normeDiffNoir = new Double(Core.norm(diffNoir));
     					if (normeDiffNoir > 4500){
-    						//Remise à 0 du compteur s'il doit être réutilisé pour une nouvelle photo
-    						//De même pour le tableau n
     						File pictureFileDir = getDir();
     						SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH.mm.ss");
     						String date = dateFormat.format(new Date());
@@ -265,10 +261,14 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     						Imgproc.cvtColor(current, current, Imgproc.COLOR_BGR2RGB); 
     						Highgui.imwrite(filename, current);
     						Log.i(TAG,"Photo sauvegardée");
+    						//Remise à 0 du compteur s'il doit être réutilisé pour une nouvelle photo
+    						//De même pour le tableau n
     						compteur = 0;
     						n.clear();
     						envoiPhoto(filename);
     					} else {
+    						//Remise à 0 du compteur s'il doit être réutilisé pour une nouvelle photo
+    						//De même pour le tableau n
     						compteur = 0;
     						n.clear();
     						finish();
