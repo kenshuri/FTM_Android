@@ -136,7 +136,6 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     public void onPause()
     {
         super.onPause();
-        //genereFichier();
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
     }
@@ -180,7 +179,7 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
      * <li>Si la porte n'est pas stable, on cherche alors à détecter l'événement
      * porte stable pour pouvoir prendre une photo.</li>
      * <li>Si la porte est stable mais pas fermée, cela signifie que l'on a déjà
-     * pris une photo du contenu du frigo et on attend que la porte soir fermée pour revenir
+     * pris une photo du contenu du frigo et on attend que la porte soit fermée pour revenir
      * dans l'état initial. </li>
      * </ul>
      * </p>
@@ -194,42 +193,45 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     		//On va rechercher l'événement : le flux vidéo représente des images noires
     		Scalar scalaireN = new Scalar(0x00,0x00,0x00,0xFF);
     		Mat noir = new Mat(current.size(),current.type(),scalaireN);
+    		//noir est une matrice noire
     		//Comparaison avec une image noire, résultat stocké dans une matrice diffNoir
     		Mat diffNoir = new Mat(current.size(),current.type());
-    		Core.absdiff(current, noir, diffNoir);
-    		Double normeDiffNoir = new Double(Core.norm(diffNoir));
-    		n.add(normeDiffNoir);
+    		Core.absdiff(current, noir, diffNoir); 
+    		Double normeDiffNoir = new Double(Core.norm(diffNoir)); //Calclule de la norme de cette matrice
+    		n.add(normeDiffNoir); //Ajout de cette norme dans un conteneur
     		compteur++;		//Compteur du nombre d'images prises
     		if (compteur > 11) {
     			//S'il y a suffisamment d'images déjà prises, on vérifie que la porte est fermée
-    			fermee = true;
+    			fermee = true; 
     			int i =0;
     			while (fermee && i<10) {
     				//La porte est fermee si sur les dix dernières photos prises, la différence
     				//entre une image noire et l'image current n'est pas trop grande.
     				if (n.get(compteur-1-i) > 4500) {
-    					fermee = false;
+    					fermee = false; //Si cette différence est trop grande, on considère que la porte n'est pas fermée
     				}
     				i++;
-    				}
+    				} //Si elle n'a jamais été trop grande, la porte est effectivement fermée
     			if (fermee){
     				//Remise à 0 du compteur s'il doit être réutilisé pour une nouvelle photo
 					//De même pour le tableau n
     				compteur = 0;
     				n.clear();
-					finish();
+					finish(); //Retour sur l'activité principale qui attend une ouverture du frigo.
     			}
     		}
     	} else if (!stable){
     		//Aucune photo n'a encore été prise
-    		Mat diffBuffer = new Mat(current.size(),current.type());
-    		if (buffer == null) {
+    		//On va rechercher l'événement : l'image est stable
+    		if (buffer == null) { //Première image reçue, il faut créer une matrice buffer qui contiendra l'image précédente
     			buffer = new Mat(current.size(),current.type());
     			buffer = current.clone();
-    		} else {
+    		} else { //C'est au moins la deuxième image reçue
+    			//Comparaison entre l'image précédente et l'image courante, résultat stocké dans une matrice diffBuffer
+    			Mat diffBuffer = new Mat(current.size(),current.type());
     			Core.absdiff(current, buffer, diffBuffer);
-    			Double normeDiffBuffer = new Double(Core.norm(diffBuffer));
-    			n.add(normeDiffBuffer);
+    			Double normeDiffBuffer = new Double(Core.norm(diffBuffer)); //Calcul de la norme de cette matrice
+    			n.add(normeDiffBuffer); //Ajout de cette norme dans un conteneur
     			compteur++;		//Compteur du nombre d'images prises
     			if (compteur > 11) {
     				//S'il y a suffisamment d'images déjà prises, on vérifie que la porte est stable
@@ -244,29 +246,32 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     					i++;
     				}
     				if (stable){
+    					//Si l'image est stable, il faut vérifier tout d'abord que la porte n'est pas fermée.
+    					//(on effectue ici le même traîtement que pour une détection de porte fermée)
     					Scalar scalaireN = new Scalar(0x00,0x00,0x00,0xFF);
     					Mat noir = new Mat(current.size(),current.type(),scalaireN);
-    					//Comparaison avec une image noire, résultat stocké dans une matrice diffNoir
     					Mat diffNoir = new Mat(current.size(),current.type());
     					Core.absdiff(current, noir, diffNoir);
     					Double normeDiffNoir = new Double(Core.norm(diffNoir));
     					if (normeDiffNoir > 4500){
+    						//Si la porte n'est pas fermée, on va sauvegarder l'image avant de l'envoyer
     						File pictureFileDir = getDir();
     						SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH.mm.ss");
     						String date = dateFormat.format(new Date());
-    						String photoFile = "PictureCV_" + date + ".jpg";
-    						String filename = pictureFileDir.getPath() + File.separator + photoFile;
+    						String photoFile = "PictureCV_" + date + ".jpg"; //Nom du fichier
+    						String filename = pictureFileDir.getPath() + File.separator + photoFile; 
     						//On doit convertir les couleurs avant de sauvegarder l'image.
     						//La description de la fonction cvtColor explique pourquoi
     						Imgproc.cvtColor(current, current, Imgproc.COLOR_BGR2RGB); 
-    						Highgui.imwrite(filename, current);
+    						Highgui.imwrite(filename, current); //Sauvegarde
     						Log.i(TAG,"Photo sauvegardée");
     						//Remise à 0 du compteur s'il doit être réutilisé pour une nouvelle photo
     						//De même pour le tableau n
     						compteur = 0;
     						n.clear();
-    						envoiPhoto(filename);
+    						envoiPhoto(filename); //Envoi de la photo
     					} else {
+    						//Cas où a porte est fermée
     						//Remise à 0 du compteur s'il doit être réutilisé pour une nouvelle photo
     						//De même pour le tableau n
     						compteur = 0;
@@ -287,39 +292,26 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
      * @param filename Nom de la photo à envoyer
      */
     void envoiPhoto(String filename){
-    	Log.i(TAG, "Envoie de la photo");
-    	Bitmap bitmap = BitmapFactory.decodeFile(filename);
-    	ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    	bitmap.compress(CompressFormat.JPEG, 60, bos);
-    	byte[] data = bos.toByteArray();
-    	
-    	File pictureFileDir = getDir();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH.mm.ss");
-		String date = dateFormat.format(new Date());
-		String photoFile = "PictureSend_" + date + ".jpg";
-		String fileName = pictureFileDir.getPath() + File.separator + photoFile;
-    	File pictureFile = new File(fileName);
-    	
-    	try {
-			FileOutputStream fos = new FileOutputStream(pictureFile);
-			fos.write(data);
-			fos.close();
-		} catch (Exception error) {
-			Log.d(TAG, "File" + filename + "not saved: "
-					+ error.getMessage());
-		}
-    	
+    	Log.i(TAG, "Envoie de la photo"); 	
+    	File pictureFile = new File(filename); //On récupère le fichier image
+    	// Initialisation du client HTTP
     	HttpClient httpClient = new DefaultHttpClient();
 		httpClient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+		/* Création de la requête POST. On lui donne en adresse l'adresse du serveur
+		suivi de /upload. Le serveur mis en place pendant le projet attend
+		une requête de ce type */
 		HttpPost postRequest = new HttpPost("http://192.168.43.8:9001/upload");
 		try {
-		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-		
-		entity.addPart("picture", new FileBody(((File)pictureFile), "image/jpeg"));
-		entity.addPart("email", new StringBody("emilie.paillous@gmail.com", "text/plain", Charset.forName("UTF-8")));
-		postRequest.setEntity(entity);
-		String response = EntityUtils.toString(httpClient.execute(postRequest).getEntity(),"UTF-8");
-		Log.i(TAG,"Requete exécutée");
+			// Création de l'entité qui sera associée à la requête
+			MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+			//On lui ajoute les champs "picture" et "email"
+			// !!Attention, les noms "picture" et "email" ont leur importance, c'est ce
+			//qu'attend le serveur
+			entity.addPart("picture", new FileBody(((File)pictureFile), "image/jpeg"));
+			entity.addPart("email", new StringBody("emilie.paillous@gmail.com", "text/plain", Charset.forName("UTF-8")));
+			postRequest.setEntity(entity); //Exécution de la requête
+			String response = EntityUtils.toString(httpClient.execute(postRequest).getEntity(),"UTF-8");
+			Log.i(TAG,"Requete exécutée");
 		} catch (IOException e) {
 			Log.i(TAG,"L'exécution de la requête lance une exception car : " + e.toString());
 		}
@@ -331,24 +323,17 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
      * le contenu du tableau n
      */
     void genereFichier() {
-		// Génération du fichier de données
+		// Génération du fichier de données des normes (pour être analyser par la suite)
 		 File FileDir = getDir();
-
 		    if (!FileDir.exists() && !FileDir.mkdirs()) {
-
 		      Toast.makeText(this, "Can't create directory to save image.",Toast.LENGTH_LONG).show();
 		      return;
-
 		    }
-
 		    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH.mm.ss");
 		    String date = dateFormat.format(new Date());
 		    String nameDataFile = "Norme_" + date + ".txt";
-
 		    String filename = FileDir.getPath() + File.separator + nameDataFile;
-
-		    File dataFile = new File(filename);
-		    
+		    File dataFile = new File(filename);		    
 		    try {
 		      FileWriter fx = new FileWriter(filename);
 		      for (Double m : n) {
