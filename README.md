@@ -30,7 +30,7 @@ compatible avec l'API 9, ce qui est le cas si le terminal est équipée d'une ve
 (penser à ajouter dans le fichier manifest.xml les permissions pour utiliser toutes ces fonctionnalités).
 Il faut aussi que l'application "OpenCv Manager" soit instalée sur le téléphone.
     
-## 2. Présentation des application
+## 2. Présentation des applications
 
 ### L'application FrigoTimeMachine
 L'application FrigoTimeMachine est développée pour faire partie d'un projet plus global. Le but est de réaliser
