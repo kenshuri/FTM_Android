@@ -52,7 +52,7 @@ où elle attend une nouvelle ouverture de porte.
 
 Pour l'analyse du flux d'images, l'application utilise une bibliothèque graphique : OpenCV. OpenCV est très puissante
 et permet notamment de comparer deux images entre elle et de mesurer leur "taux" de différence. Ce "taux" nous permet
-ensuite de déterminer si l'image est stable. Pour ce qui du mécanisme utilisé en pratique, référez vous au code qui est 
+ensuite de déterminer si l'image est stable. Pour ce est qui du mécanisme utilisé en pratique, référez vous au code qui est 
 accompagné de commentaires. Si vous utilisez eclipse et que vous voulez générer la doc, n'utilisez pas l'outil de 
 génération automatique. Utilisez plutôt le fichier javadoc.xml présent à la racine du dossier de l'appli. Faîtes un clic 
 droit dessus, puis "Run as" et enfin "Ant Build".
