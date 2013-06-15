@@ -29,6 +29,9 @@ compatible avec l'API 9, ce qui est le cas si le terminal est équipée d'une ve
 (ou bien d'un photomètre), d'une mémoire externe accessible en écriture et qu'il puisse accéder à internet 
 (penser à ajouter dans le fichier manifest.xml les permissions pour utiliser toutes ces fonctionnalités).
 Il faut aussi que l'application "OpenCv Manager" soit instalée sur le téléphone.
+
+Enfin, avant de se plonger dans le code, je vous conseille de suivre le tutoriel du site du zero sur le développement
+d'applications Android que vous trouverez en suivant ce lien : http://www.siteduzero.com/informatique/tutoriels/creez-des-applications-pour-android
     
 ## 2. Présentation des applications
 
