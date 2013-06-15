@@ -57,7 +57,7 @@ accompagné de commentaires. Si vous utilisez eclipse et que vous voulez génér
 génération automatique. Utilisez plutôt le fichier javadoc.xml présent à la racine du dossier de l'appli. Faîtes un clic 
 droit dessus, puis "Run as" et enfin "Ant Build".
 
-### Différenes entre les deux versions de FrigoTimeMachine
+### Différences entre les deux versions de FrigoTimeMachine
 Les deux versions de FrigoTimeMachine ont toutes deux le même objectif, celui de prendre une bonne photo et de l'envoyer.
 Il ne faut pas considérer la version 2 comme une amélioration de la version 1, ce sont simplement deux implémentations
 différentes pour répondre à un même problème.
