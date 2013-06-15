@@ -26,7 +26,7 @@ Je vous conseille aussi de consulter ces quelques informations :
 En ce qui concerne le matériel Android nécessaire pour faire tourner l'application, il faut que ce dernier soit 
 compatible avec l'API 9, ce qui est le cas si le terminal est équipée d'une version d'Android postérieure à Gingerbread
 (2.3) compris. Il faut aussi que le téléphone soit équipé d'une caméra pour les prises de vue, d'un accéléromètre 
-(ou bien d'une photomètre), d'une mémoire externe accessible en écriture et qu'il puisse accéder à internet 
+(ou bien d'un photomètre), d'une mémoire externe accessible en écriture et qu'il puisse accéder à internet 
 (penser à ajouter dans le fichier manifest.xml les permissions pour utiliser toutes ces fonctionnalités).
 Il faut aussi que l'application "OpenCv Manager" soit instalée sur le téléphone.
     
