@@ -68,7 +68,7 @@ alors que dans la deuxième version, la définition de la photo est faible (320x
 bien visible.
 
 Dans la première version, lorsque l'on détecte que la photo est stable, on lance l'activité principale pour prendre 
-une photo. Durant ce processus, l'activité correspond à OpenCV (OpenActivity) doit libérer la ressource "caméra", 
+une photo. Durant ce processus, l'activité correspondant à OpenCV (OpenActivity) doit libérer la ressource "caméra", 
 puis l'activité principale accède au téléphone pour prendre une photo. Le temps qui s'écoule durant cela n'est 
 pas anecdotique et l'utilisateur a le temps de s'interposer entre l'appareil et le frigo ce qui peut aboutir à une 
 photo obstruée. En revanche, dans la deuxième version, la photo est directement enregistrée dans OpenActivity,
