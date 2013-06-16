@@ -82,6 +82,8 @@ Pour le prototype final, nous avons préféré utiliser la deuxième version de 
 photos du contenu du frigo ne seraient jamais obstruées par l'utilisateur. C'était un choix de notre part et il n'y a 
 pas forcément de meilleure solution.
 
+Enfin, la fonctionnalité de reconnaissance d'objet (qui est mieux décrite dans la partie "Banana Detector") est pré-implémentée dans la deuxième version. L'application est en effet capable d'analyser la photo, de compter le nombre de bananes (seul l'objet banane a été étudié) avant d'envoyer sur la plate-forme la photo ainsi que le nombre de bananes présentes dessus. Malheureusement, comme expliqué dans la partie "Banana Detector", cette détection est loin d'être parfaite et il n'est pas rare que le comptage échoue.
+
 ###Banana Detector
 Dans le projet global, il y a une partie de reconnaissance d'image. En effet, le système est sensé reconnaître les aliments dans le frigo de manière automatique. Nous avions décidé à l'origine de notre projet de ne pas traiter la
 partie concernant cette reconnaissance. Toutefois, par curiosité et aussi pour s'assurer de la faisabilité du projet, nous avons eu la volonté de développer une application Android capable de reconnaître un objet. C'est la vocation de Banana Detector.
