@@ -1,10 +1,10 @@
 package fr.imag.frigotimemachinev2;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,14 +29,15 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfRect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.CompressFormat;
-import android.graphics.BitmapFactory;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -89,6 +90,16 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
      * Vrai si la porte du frigo est fermée, faux sinon
      */
     private boolean fermee = false;
+    
+    /**
+     * Fichier contenant les informations du classifieur (reconnaisance d'objet)
+     */
+    private File                 mCascadeFile;
+    
+    /**
+     * Le classifieur chargé (reconnaisance d'objet)
+     */
+    private CascadeClassifier    mCascadeClassifier;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -97,6 +108,36 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
                 case LoaderCallbackInterface.SUCCESS:
                 {
                     Log.i(TAG, "OpenCV loaded successfully");
+                    //Ce qui suit concerne la reconnaissance d'objet, à commenter si non souhaité
+                    try {
+                        // On charge le fichier XML contenant les données du classifieur (on l'a ajouté au dossier res/raw)
+                        InputStream is = getResources().openRawResource(R.raw.banana);
+                        File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+                        FileOutputStream os = new FileOutputStream(mCascadeFile);
+
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            os.write(buffer, 0, bytesRead);
+                        }
+                        is.close();
+                        os.close();
+
+                        mCascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+                        if (mCascadeClassifier.empty()) {
+                            Log.e(TAG, "Failed to load cascade classifier");
+                            mCascadeClassifier = null;
+                        } else
+                            Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
+
+                        cascadeDir.delete();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+                    }
+                    //Fin de la partie sur la reconnaissance d'image
                     mOpenCvCameraView.enableView();
                 } break;
                 default:
@@ -127,6 +168,7 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.open_activity_java_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+        
     }
 
     /**
@@ -246,6 +288,7 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     					i++;
     				}
     				if (stable){
+    					Log.i(TAG,"Prise de la photo");
     					//Si l'image est stable, il faut vérifier tout d'abord que la porte n'est pas fermée.
     					//(on effectue ici le même traîtement que pour une détection de porte fermée)
     					Scalar scalaireN = new Scalar(0x00,0x00,0x00,0xFF);
@@ -269,7 +312,26 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     						//De même pour le tableau n
     						compteur = 0;
     						n.clear();
-    						envoiPhoto(filename); //Envoi de la photo
+    						
+    						
+    						//Tentative de reconnaissance d'image
+    						//On va essayer de détecter la présence d'une banane pour chaque nouvelle image
+    				    	//captée par le téléphone
+    				    	Mat Grey = inputFrame.gray(); //Image prise par la caméra
+    				    	MatOfRect bananas = new MatOfRect();
+    				    	Size minSize = new Size(30,20);
+    				    	Size maxSize = new Size(150,100);
+    				    	Log.i(TAG, "Tentative de détection de banane");
+    				    	mCascadeClassifier.detectMultiScale(Grey, bananas, 1.1, 0, 10,minSize,maxSize);
+    				    	if (bananas.rows()>0){
+    				    		Log.i(TAG, "Nombre de bananes détectées : " + bananas.rows());
+    				    	}
+    						envoiPhoto(filename, bananas.rows()); //Envoi de la photo avec les données de reconnaissance
+    						//Fin de la reconnaissance de l'image
+    						
+    						
+    						//envoiPhoto(filename); //Envoi de la photo sans les données de reconnaissance
+    						
     					} else {
     						//Cas où a porte est fermée
     						//Remise à 0 du compteur s'il doit être réutilisé pour une nouvelle photo
@@ -319,6 +381,40 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     }
     
     /**
+     * Envoie une photo vers la plateforme web, avec le nombre de banane détectées
+     * 
+     * @param filename Nom de la photo à envoyer
+     * @param nbBanana Nombre de bananes détectées
+     */
+    void envoiPhoto(String filename, int nbBanana){
+    	Log.i(TAG, "Envoie de la photo"); 	
+    	File pictureFile = new File(filename); //On récupère le fichier image
+    	// Initialisation du client HTTP
+    	HttpClient httpClient = new DefaultHttpClient();
+		httpClient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+		/* Création de la requête POST. On lui donne en adresse l'adresse du serveur
+		suivi de /upload. Le serveur mis en place pendant le projet attend
+		une requête de ce type */
+		HttpPost postRequest = new HttpPost("http://192.168.43.8:9001/upload");
+		try {
+			// Création de l'entité qui sera associée à la requête
+			MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+			//On lui ajoute les champs "picture" et "email"
+			// !!Attention, les noms "picture" et "email" ont leur importance, c'est ce
+			//qu'attend le serveur
+			entity.addPart("picture", new FileBody(((File)pictureFile), "image/jpeg"));
+			entity.addPart("email", new StringBody("emilie.paillous@gmail.com", "text/plain", Charset.forName("UTF-8")));
+			entity.addPart("nbBanana", new StringBody(""+nbBanana, "text/plain", Charset.forName("UTF-8")));
+			postRequest.setEntity(entity); //Exécution de la requête
+			String response = EntityUtils.toString(httpClient.execute(postRequest).getEntity(),"UTF-8");
+			Log.i(TAG,"Requete exécutée");
+		} catch (IOException e) {
+			Log.i(TAG,"L'exécution de la requête lance une exception car : " + e.toString());
+		}
+		Log.i(TAG,"Sortie envoiPhoto"); 	
+    }
+    
+    /**
      * Méthode interne de debug. Permet de générer un fichier contenant
      * le contenu du tableau n
      */
@@ -329,7 +425,7 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
 		      Toast.makeText(this, "Can't create directory to save image.",Toast.LENGTH_LONG).show();
 		      return;
 		    }
-		    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH.mm.ss");
+		    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH.mm.ss.SS");
 		    String date = dateFormat.format(new Date());
 		    String nameDataFile = "Norme_" + date + ".txt";
 		    String filename = FileDir.getPath() + File.separator + nameDataFile;
@@ -347,6 +443,7 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
 		          Toast.LENGTH_LONG).show();
 		    }
 	}
+    
 	
     /**
      * Méthode interne qui renvoie un dossier de destination

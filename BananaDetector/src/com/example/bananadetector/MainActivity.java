@@ -63,10 +63,10 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                     Log.i(TAG, "OpenCV loaded successfully");
                     
                     try {
-                        // On charge le fichier XML contenant les données du classifieur
+                        // On charge le fichier XML contenant les données du classifieur (on l'a ajouté au dossier res/raw)
                         InputStream is = getResources().openRawResource(R.raw.banana);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+                        mCascadeFile = new File(cascadeDir, "banana.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
                         byte[] buffer = new byte[4096];
@@ -175,7 +175,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
     	Mat Grey = inputFrame.gray(); //Image prise par la caméra
     	MatOfRect bananas = new MatOfRect();
     	Size minSize = new Size(30,20);
-    	Size maxSize = new Size(120,80);
+    	Size maxSize = new Size(150,100);
     	mCascadeClassifier.detectMultiScale(Grey, bananas, 1.1, 10, 0,minSize,maxSize);
     	if (bananas.rows()>0){
     		Log.i(TAG, "Nombre de bananes détectées : " + bananas.rows());
