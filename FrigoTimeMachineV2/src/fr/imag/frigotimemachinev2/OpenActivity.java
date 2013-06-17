@@ -108,6 +108,7 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
                 case LoaderCallbackInterface.SUCCESS:
                 {
                     Log.i(TAG, "OpenCV loaded successfully");
+                    /*
                     //Ce qui suit concerne la reconnaissance d'objet, à commenter si non souhaité
                     try {
                         // On charge le fichier XML contenant les données du classifieur (on l'a ajouté au dossier res/raw)
@@ -138,6 +139,7 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
                     //Fin de la partie sur la reconnaissance d'image
+                     */
                     mOpenCvCameraView.enableView();
                 } break;
                 default:
@@ -313,7 +315,7 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     						compteur = 0;
     						n.clear();
     						
-    						
+    						/*
     						//Tentative de reconnaissance d'image
     						//On va essayer de détecter la présence d'une banane pour chaque nouvelle image
     				    	//captée par le téléphone
@@ -328,9 +330,9 @@ public class OpenActivity extends Activity implements CvCameraViewListener2{
     				    	}
     						envoiPhoto(filename, bananas.rows()); //Envoi de la photo avec les données de reconnaissance
     						//Fin de la reconnaissance de l'image
+    						*/
     						
-    						
-    						//envoiPhoto(filename); //Envoi de la photo sans les données de reconnaissance
+    						envoiPhoto(filename); //Envoi de la photo sans les données de reconnaissance
     						
     					} else {
     						//Cas où a porte est fermée
